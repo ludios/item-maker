@@ -13,13 +13,8 @@ fn get(db: &DB, key: &[u8]) -> Option<DBVector> {
 	}
 }
 
-fn count_keys(db: &DB) -> u64 {
-	let mut count = 0;
-	let iter = db.iterator(IteratorMode::Start);
-	for _ in iter {
-		count += 0;
-	}
-	count
+fn count_keys(db: &DB) -> usize {
+	db.iterator(IteratorMode::Start).count()
 }
 
 fn main() {

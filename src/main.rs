@@ -1,7 +1,7 @@
 use std::io::{self, BufRead};
 use std::path::Path;
 use clap::{Arg, App};
-use rocksdb::{DB, DBVector};
+use rocksdb::{DB, DBVector, IteratorMode};
 
 #[macro_use]
 extern crate clap;
@@ -11,6 +11,15 @@ fn get(db: &DB, key: &[u8]) -> Option<DBVector> {
 		Ok(value) => value,
 		Err(e) => panic!("rocksdb operational problem encountered: {}", e),
 	}
+}
+
+fn count_keys(db: &DB) -> u64 {
+	let mut count = 0;
+	let iter = db.iterator(IteratorMode::Start);
+	for _ in iter {
+		count += 0;
+	}
+	count
 }
 
 fn main() {
@@ -36,6 +45,9 @@ fn main() {
 	let queue = DB::open_default(queue_path).unwrap();
 
 	let stdin = io::stdin();
+	// TODO: estimate keys in db
+	// db->GetProperty("rocksdb.estimate-num-keys", &num)
+	println!("Starting with {} keys in database and {} in queue", count_keys(&db), count_keys(&queue));
 	for line in stdin.lock().lines() {
 		let line = line.unwrap();
 		let key = line.as_bytes();

@@ -1,0 +1,7 @@
+[package]
+name = "item-maker"
+version = "0.1.0"
+authors = ["at"]
+
+[dependencies]
+rocksdb = "0.10.1"

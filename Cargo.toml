@@ -1,7 +1,11 @@
+cargo-features = ["edition"]
+
 [package]
 name = "item-maker"
 version = "0.1.0"
 authors = ["at"]
+edition = "2018"
 
 [dependencies]
 rocksdb = "0.10.1"
+clap = "2.32.0"

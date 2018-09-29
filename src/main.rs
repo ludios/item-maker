@@ -1,10 +1,17 @@
 use std::io::{self, BufRead};
 use std::path::Path;
 use clap::{Arg, App};
-use rocksdb::DB;
+use rocksdb::{DB, DBVector};
 
 #[macro_use]
 extern crate clap;
+
+fn get(db: &DB, key: &[u8]) -> Option<DBVector> {
+	match db.get(key) {
+		Ok(value) => value,
+		Err(e) => panic!("rocksdb operational problem encountered: {}", e),
+	}
+}
 
 fn main() {
     let matches = App::new("item-maker")
@@ -23,14 +30,18 @@ fn main() {
 	let workspace = Path::new(matches.value_of("WORKSPACE").unwrap());
 	let item_size = value_t!(matches.value_of("ITEM_SIZE"), u32).unwrap();
 
-	let rocksdb_path = workspace.join("rocksdb");
-	let db = DB::open_default(rocksdb_path).unwrap();
-
-	// TODO: write to `queue` and when that becomes full, write to database and item
+	let db_path = workspace.join("database");
+	let queue_path = workspace.join("queue");
+	let db = DB::open_default(db_path).unwrap();
+	let queue = DB::open_default(queue_path).unwrap();
 
 	let stdin = io::stdin();
 	for line in stdin.lock().lines() {
-		println!("{:?}", line);
-		//db.put(line, b"").unwrap();
+		let line = line.unwrap();
+		let key = line.as_bytes();
+		match get(&db, &key) {
+			None => queue.put(&key, b"").unwrap(),
+			Some(_) => {}
+		}
 	}
 }

@@ -20,8 +20,8 @@ fn main() {
                                .index(2))
                           .get_matches();
 
-	let workspace = Path::new(matches.value_of("workspace").unwrap());
-	let item_size = value_t!(matches.value_of("item_size"), u32).unwrap();
+	let workspace = Path::new(matches.value_of("WORKSPACE").unwrap());
+	let item_size = value_t!(matches.value_of("ITEM_SIZE"), u32).unwrap();
 
 	let rocksdb_path = workspace.join("rocksdb");
 	let db = DB::open_default(rocksdb_path).unwrap();
@@ -30,6 +30,7 @@ fn main() {
 
 	let stdin = io::stdin();
 	for line in stdin.lock().lines() {
-		db.put(line, b"").unwrap();
+		println!("{:?}", line);
+		//db.put(line, b"").unwrap();
 	}
 }

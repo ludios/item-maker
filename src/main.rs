@@ -18,18 +18,19 @@ fn count_keys(db: &DB) -> usize {
 }
 
 fn main() {
-    let matches = App::new("item-maker")
-                          .version("1.0")
-                          .about("generates items of N lines that have not previously appeared in another item")
-                          .arg(Arg::with_name("WORKSPACE")
-                               .help("Directory to use as the workspace")
-                               .required(true)
-                               .index(1))
-                          .arg(Arg::with_name("ITEM_SIZE")
-                               .help("Number of lines to put in each new item")
-                               .required(true)
-                               .index(2))
-                          .get_matches();
+	let matches =
+		App::new("item-maker")
+		.version("1.0")
+		.about("generates items of N lines that have not previously appeared in another item")
+		.arg(Arg::with_name("WORKSPACE")
+			.help("Directory to use as the workspace")
+			.required(true)
+			.index(1))
+		.arg(Arg::with_name("ITEM_SIZE")
+			.help("Number of lines to put in each new item")
+			.required(true)
+			.index(2))
+		.get_matches();
 
 	let workspace = Path::new(matches.value_of("WORKSPACE").unwrap());
 	let item_size = value_t!(matches.value_of("ITEM_SIZE"), u32).unwrap();

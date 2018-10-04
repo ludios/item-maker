@@ -7,5 +7,7 @@ authors = ["at"]
 edition = "2018"
 
 [dependencies]
-rocksdb = "0.10.1"
 clap = "2.32.0"
+
+[dependencies.rocksdb]
+git = "https://github.com/pingcap/rust-rocksdb.git"

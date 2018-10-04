@@ -1,7 +1,8 @@
 use std::io::{self, BufRead};
 use std::path::Path;
 use clap::{Arg, App};
-use rocksdb::{DB, DBVector, IteratorMode};
+use rocksdb::{DB, DBVector};
+use rocksdb::rocksdb::Writable;
 
 #[macro_use]
 extern crate clap;
@@ -14,7 +15,11 @@ fn get(db: &DB, key: &[u8]) -> Option<DBVector> {
 }
 
 fn count_keys(db: &DB) -> usize {
-	db.iterator(IteratorMode::Start).count()
+	db.iter().count()
+}
+
+fn estimate_keys(db: &DB) -> u64 {
+	db.get_property_int("rocksdb.estimate-num-keys").unwrap()
 }
 
 fn main() {
@@ -37,13 +42,11 @@ fn main() {
 
 	let db_path = workspace.join("database");
 	let queue_path = workspace.join("queue");
-	let db = DB::open_default(db_path).unwrap();
-	let queue = DB::open_default(queue_path).unwrap();
+	let db = DB::open_default(db_path.to_str().unwrap()).unwrap();
+	let queue = DB::open_default(queue_path.to_str().unwrap()).unwrap();
 
 	let stdin = io::stdin();
-	// TODO: estimate keys in db
-	// db->GetProperty("rocksdb.estimate-num-keys", &num)
-	println!("Starting with {} keys in database and {} in queue", count_keys(&db), count_keys(&queue));
+	println!("Starting with ~{} keys in database and {} in queue", estimate_keys(&db), count_keys(&queue));
 	for line in stdin.lock().lines() {
 		let line = line.unwrap();
 		let key = line.as_bytes();

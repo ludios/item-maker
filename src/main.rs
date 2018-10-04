@@ -114,15 +114,14 @@ fn main() {
 	for line in stdin.lock().lines() {
 		let line = line.unwrap();
 		let key  = line.as_bytes();
-		match get(&db, &key) {
-			None => {
+		if let None = get(&db, &key) {
+			if let None = get(&queue, &key) {
 				queue.put(&key, b"").unwrap();
 				keys_in_queue += 1;
 				if keys_in_queue >= item_size {
 					keys_in_queue = process_queue(&queue, &db, keys_in_queue, &items_path, item_size);
 				}
-			},
-			Some(_) => {}
+			}
 		}
 	}
 }

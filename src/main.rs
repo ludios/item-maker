@@ -79,7 +79,7 @@ fn process_queue(queue: &DB, db: &DB, keys_in_queue: u64, items_path: &Path, ite
 fn main() {
 	let matches =
 		App::new("item-maker")
-		.version("1.0")
+		.version(crate_version!())
 		.about("generates items of N lines that have not previously appeared in another item")
 		.arg(Arg::with_name("WORKSPACE")
 			.help("Directory to use as the workspace")

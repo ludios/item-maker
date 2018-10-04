@@ -26,7 +26,7 @@ Usage
 
 ```
 item-maker --help
-item-maker ~/workspace 10000
+item-maker ~/workspace 100
 ```
 
 Pipe lines into `item-maker`.  Lines are added to the queue.  When the

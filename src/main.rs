@@ -49,7 +49,7 @@ fn set_current_item(db: &DB, item: u32) {
 	db.put(NEXT_ITEM_KEY, &item_as_vec(item)).unwrap();
 }
 
-fn process_queue(queue: &DB, db: &DB, keys_in_queue: u64, items_path: &Path, item_size: u64) -> u64 {
+fn process_queue(queue: &DB, db: &DB, keys_in_queue: u64, items_path: &Path, item_size: u64, prefix: &str) -> u64 {
 	println!("Processing queue with ~{} keys in database and {} in queue", estimate_keys(&db), keys_in_queue);
 	let mut keys_in_queue = keys_in_queue;
 	loop {
@@ -60,7 +60,7 @@ fn process_queue(queue: &DB, db: &DB, keys_in_queue: u64, items_path: &Path, ite
 		assert!(iter.seek(SeekKey::Start));
 		let item     = get_current_item(&db);
 		let item_vec = item_as_vec(item);
-		let basename = format!("{:0>10}.txt", item); // u32 has 10 digits max
+		let basename = format!("{}{:0>10}.txt", prefix, item); // u32 has 10 digits max
 		let filename = items_path.join(basename);
     	let mut file = OpenOptions::new().create(true).append(true).open(&filename).unwrap();
     	println!("Writing to {}", filename.to_str().unwrap());
@@ -80,7 +80,7 @@ fn main() {
 	let matches =
 		App::new("item-maker")
 		.version(crate_version!())
-		.about("generates items of N lines that have not previously appeared in another item")
+		.about("Imports lines from stdin and writes item files containing N lines that have not previously appeared in another item")
 		.arg(Arg::with_name("WORKSPACE")
 			.help("Directory to use as the workspace")
 			.required(true)
@@ -90,14 +90,20 @@ fn main() {
 			.required(true)
 			.index(2))
 		.arg(Arg::with_name("force")
-			.help("After processing stdin, write out an item file even if queue size < ITEM_SIZE (but not empty)")
+			.help("After processing stdin, write an item file even if queue size < ITEM_SIZE (but not empty)")
 			.short("f")
 			.long("force"))
+		.arg(Arg::with_name("prefix")
+			.help("Filename prefix to use for item files")
+			.takes_value(true)
+			.long("prefix")
+			.default_value(""))
 		.get_matches();
 
 	let workspace  = Path::new(matches.value_of("WORKSPACE").unwrap());
 	let item_size  = value_t!(matches.value_of("ITEM_SIZE"), u64).unwrap();
 	let force      = matches.is_present("force");
+	let prefix     = matches.value_of("prefix").unwrap();
 	let db_path    = workspace.join("database");
 	let queue_path = workspace.join("queue");
 	let items_path = workspace.join("items");
@@ -113,7 +119,7 @@ fn main() {
 	// Process the queue even if we get no input, because item_size may be
 	// smaller than it was before.
 	if keys_in_queue >= item_size {
-		keys_in_queue = process_queue(&queue, &db, keys_in_queue, &items_path, item_size);
+		keys_in_queue = process_queue(&queue, &db, keys_in_queue, &items_path, item_size, &prefix);
 	}
 
 	for line in stdin.lock().lines() {
@@ -124,7 +130,7 @@ fn main() {
 				queue.put(&key, b"").unwrap();
 				keys_in_queue += 1;
 				if keys_in_queue >= item_size {
-					keys_in_queue = process_queue(&queue, &db, keys_in_queue, &items_path, item_size);
+					keys_in_queue = process_queue(&queue, &db, keys_in_queue, &items_path, item_size, &prefix);
 				}
 			}
 		}
@@ -132,7 +138,7 @@ fn main() {
 
 	if force && keys_in_queue > 0 {
 		let item_size = keys_in_queue;
-		let remaining = process_queue(&queue, &db, keys_in_queue, &items_path, item_size);
+		let remaining = process_queue(&queue, &db, keys_in_queue, &items_path, item_size, &prefix);
 		assert!(remaining == 0);
 	}
 }

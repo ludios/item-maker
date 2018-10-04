@@ -1,11 +1,11 @@
 item-maker
 ===
 
-This program is designed to collect lines (of anything, e.g. URLs) into a
-RocksDB database and write "item files" containing N lines per item, with
-no redundant lines within or across items.
+`item-maker` collects lines (of anything, e.g. URLs) into a RocksDB database
+and write "item files" containing N lines per item, with no redundant lines
+within or across items.
 
-It was motivated by a common use case when archiving the web: URLs are
+It is motivated by a common use case when archiving the web: URLs are
 discovered by some process, often redundantly, but each URL needs to be
 archived just once using some batch process that accepts a list of URLs.
 

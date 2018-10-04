@@ -89,10 +89,15 @@ fn main() {
 			.help("Number of lines to put in each new item")
 			.required(true)
 			.index(2))
+		.arg(Arg::with_name("force")
+			.help("After processing stdin, write out an item file even if queue size < ITEM_SIZE (but not empty)")
+			.short("f")
+			.long("force"))
 		.get_matches();
 
 	let workspace  = Path::new(matches.value_of("WORKSPACE").unwrap());
 	let item_size  = value_t!(matches.value_of("ITEM_SIZE"), u64).unwrap();
+	let force      = matches.is_present("force");
 	let db_path    = workspace.join("database");
 	let queue_path = workspace.join("queue");
 	let items_path = workspace.join("items");
@@ -107,7 +112,7 @@ fn main() {
 	let mut keys_in_queue = count_keys(&queue);
 	// Process the queue even if we get no input, because item_size may be
 	// smaller than it was before.
-	if keys_in_queue > 0 {
+	if keys_in_queue >= item_size {
 		keys_in_queue = process_queue(&queue, &db, keys_in_queue, &items_path, item_size);
 	}
 
@@ -123,5 +128,11 @@ fn main() {
 				}
 			}
 		}
+	}
+
+	if force && keys_in_queue > 0 {
+		let item_size = keys_in_queue;
+		let remaining = process_queue(&queue, &db, keys_in_queue, &items_path, item_size);
+		assert!(remaining == 0);
 	}
 }

@@ -1,7 +1,7 @@
 use std::io::{self, BufRead};
 use std::path::Path;
 use clap::{Arg, App};
-use rocksdb::{DB, DBVector};
+use rocksdb::{DB, DBVector, SeekKey};
 use rocksdb::rocksdb::Writable;
 
 #[macro_use]
@@ -15,7 +15,9 @@ fn get(db: &DB, key: &[u8]) -> Option<DBVector> {
 }
 
 fn count_keys(db: &DB) -> usize {
-	db.iter().count()
+	let mut iter = db.iter();
+	assert!(iter.seek(SeekKey::Start));
+	iter.count()
 }
 
 fn estimate_keys(db: &DB) -> u64 {

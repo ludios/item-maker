@@ -60,7 +60,7 @@ fn process_queue(queue: &DB, db: &DB, keys_in_queue: u64, items_path: &Path, ite
 		assert!(iter.seek(SeekKey::Start));
 		let item     = get_current_item(&db);
 		let item_vec = item_as_vec(item);
-		let basename = format!("{:0>10}.txt", item);
+		let basename = format!("{:0>10}.txt", item); // u32 has 10 digits max
 		let filename = items_path.join(basename);
     	let mut file = OpenOptions::new().create(true).append(true).open(&filename).unwrap();
     	println!("Writing to {}", filename.to_str().unwrap());

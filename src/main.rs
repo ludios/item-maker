@@ -42,16 +42,16 @@ fn main() {
 	let workspace = Path::new(matches.value_of("WORKSPACE").unwrap());
 	let item_size = value_t!(matches.value_of("ITEM_SIZE"), u32).unwrap();
 
-	let db_path = workspace.join("database");
+	let db_path    = workspace.join("database");
 	let queue_path = workspace.join("queue");
-	let db = DB::open_default(db_path.to_str().unwrap()).unwrap();
-	let queue = DB::open_default(queue_path.to_str().unwrap()).unwrap();
+	let db         = DB::open_default(db_path.to_str().unwrap()).unwrap();
+	let queue      = DB::open_default(queue_path.to_str().unwrap()).unwrap();
 
 	let stdin = io::stdin();
 	println!("Starting with ~{} keys in database and {} in queue", estimate_keys(&db), count_keys(&queue));
 	for line in stdin.lock().lines() {
 		let line = line.unwrap();
-		let key = line.as_bytes();
+		let key  = line.as_bytes();
 		match get(&db, &key) {
 			None => queue.put(&key, b"").unwrap(),
 			Some(_) => {}

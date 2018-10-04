@@ -107,7 +107,9 @@ fn main() {
 	let mut keys_in_queue = count_keys(&queue);
 	// Process the queue even if we get no input, because item_size may be
 	// smaller than it was before.
-	keys_in_queue = process_queue(&queue, &db, keys_in_queue, &items_path, item_size);
+	if keys_in_queue > 0 {
+		keys_in_queue = process_queue(&queue, &db, keys_in_queue, &items_path, item_size);
+	}
 
 	for line in stdin.lock().lines() {
 		let line = line.unwrap();

@@ -35,7 +35,7 @@ fn get_current_item(db: &DB) -> u32 {
 			reader.read_u32::<BigEndian>().unwrap()
 		},
 		Ok(None) => 1,
-		_ => panic!("db error")
+		Err(e) => panic!("rocksdb operational problem encountered: {}", e)
 	}
 }
 

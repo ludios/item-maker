@@ -119,7 +119,7 @@ fn main() {
 				queue.put(&key, b"").unwrap();
 				keys_in_queue += 1;
 				if keys_in_queue >= item_size {
-					process_queue(&queue, &db, keys_in_queue, &items_path, item_size);
+					keys_in_queue = process_queue(&queue, &db, keys_in_queue, &items_path, item_size);
 				}
 			},
 			Some(_) => {}

@@ -26,7 +26,11 @@ Usage
 
 ```
 item-maker --help
+
 item-maker ~/workspace 100
+
+# Create an item after processing stdin even if queue has < 100 lines
+item-maker ~/workspace 100 --force
 ```
 
 Pipe lines into `item-maker`.  Lines are added to the queue.  When the

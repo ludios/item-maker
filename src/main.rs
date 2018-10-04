@@ -1,4 +1,5 @@
-use std::io::{self, BufRead, Cursor};
+use std::io::{self, BufRead, Cursor, Write};
+use std::fs::OpenOptions;
 use std::path::Path;
 use clap::{Arg, App};
 use rocksdb::{DB, DBVector, SeekKey};
@@ -48,7 +49,7 @@ fn set_current_item(db: &DB, item: u32) {
 	db.put(NEXT_ITEM_KEY, &item_as_vec(item)).unwrap();
 }
 
-fn process_queue(queue: &DB, db: &DB, keys_in_queue: u64, items_path: &Path, item_size: u64) {
+fn process_queue(queue: &DB, db: &DB, keys_in_queue: u64, items_path: &Path, item_size: u64) -> u64 {
 	println!("Processing queue with ~{} keys in database and {} in queue", estimate_keys(&db), keys_in_queue);
 	let mut keys_in_queue = keys_in_queue;
 	loop {
@@ -59,13 +60,20 @@ fn process_queue(queue: &DB, db: &DB, keys_in_queue: u64, items_path: &Path, ite
 		assert!(iter.seek(SeekKey::Start));
 		let item     = get_current_item(&db);
 		let item_vec = item_as_vec(item);
+		let basename = format!("{:0>10}.txt", item);
+		let filename = items_path.join(basename);
+    	let mut file = OpenOptions::new().create(true).append(true).open(&filename).unwrap();
+    	println!("Writing to {}", filename.to_str().unwrap());
 		for (k, _v) in &mut iter {
 			db.put(&k, &item_vec).unwrap();
+			file.write_all(&k).unwrap();
+			file.write_all(b"\n").unwrap();
 			queue.delete(&k).unwrap();
 			keys_in_queue -= 1;
 		}
 		set_current_item(&db, item + 1);
 	}
+	keys_in_queue
 }
 
 fn main() {
@@ -99,7 +107,7 @@ fn main() {
 	let mut keys_in_queue = count_keys(&queue);
 	// Process the queue even if we get no input, because item_size may be
 	// smaller than it was before.
-	process_queue(&queue, &db, keys_in_queue, &items_path, item_size);
+	keys_in_queue = process_queue(&queue, &db, keys_in_queue, &items_path, item_size);
 
 	for line in stdin.lock().lines() {
 		let line = line.unwrap();

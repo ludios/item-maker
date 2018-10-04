@@ -17,7 +17,7 @@ fn get(db: &DB, key: &[u8]) -> Option<DBVector> {
 
 fn count_keys(db: &DB) -> u64 {
 	let mut iter = db.iter();
-	assert!(iter.seek(SeekKey::Start));
+	iter.seek(SeekKey::Start);
 	iter.count() as u64
 }
 
@@ -55,7 +55,7 @@ fn process_queue(queue: &DB, db: &DB, keys_in_queue: u64, items_path: &Path, ite
 		if keys_in_queue < item_size {
 			break;
 		}
-		let mut iter = db.iter();
+		let mut iter = queue.iter();
 		assert!(iter.seek(SeekKey::Start));
 		let item     = get_current_item(&db);
 		let item_vec = item_as_vec(item);
@@ -94,9 +94,10 @@ fn main() {
 
 	println!("Starting with ~{} keys in database and {} in queue", estimate_keys(&db), count_keys(&queue));
 
-	//process_queue(&queue, &db, &items_path, item_size);
-
 	let mut keys_in_queue = count_keys(&queue);
+	// Process the queue even if we get no input, because item_size may be
+	// smaller than it was before.
+	process_queue(&queue, &db, keys_in_queue, &items_path, item_size);
 
 	for line in stdin.lock().lines() {
 		let line = line.unwrap();

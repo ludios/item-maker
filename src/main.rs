@@ -92,6 +92,8 @@ fn main() {
 	let db         = DB::open_default(db_path.to_str().unwrap()).unwrap();
 	let stdin      = io::stdin();
 
+	std::fs::create_dir_all(&items_path).unwrap();
+
 	println!("Starting with ~{} keys in database and {} in queue", estimate_keys(&db), count_keys(&queue));
 
 	let mut keys_in_queue = count_keys(&queue);
